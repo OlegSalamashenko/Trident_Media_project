@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,12 +13,15 @@ public class FortuneWheel : MonoBehaviour
     [SerializeField] private int numberOfSpins;
     [SerializeField] private List<GameObject> prizes;
 
+    public event EventHandler OnUpdateMoneyUI;
+
     private bool isSpin = false;
     private float slowDownTime;
 
     private float maxAngle = 0f;
     private float minAngle = 0f;
     private int winSector;
+
     public void StartPlay()
     {
         if (!isSpin)
@@ -50,7 +54,7 @@ public class FortuneWheel : MonoBehaviour
             yield return null;
         }
         //Замедление
-        float distance = (numberOfSpins * 360f) + Random.Range(minAngle + 5, maxAngle - 5) - wheel.transform.rotation.eulerAngles.z;
+        float distance = (numberOfSpins * 360f) + UnityEngine.Random.Range(minAngle + 8, maxAngle - 8) - wheel.transform.rotation.eulerAngles.z;
         slowDownTime = (2 * distance) / rotationSpeed;
         float slowDown = rotationSpeed / slowDownTime;
         rotSpeed = rotationSpeed;
@@ -72,16 +76,23 @@ public class FortuneWheel : MonoBehaviour
             elapsedTime += Time.deltaTime;
             yield return null;
         }
+        OnUpdateMoneyUI?.Invoke(this,EventArgs.Empty);
         isSpin = false;
     }
 
     private int SetWin()
     {
-        int randomSector = Random.Range(0,prizes.Count);
+        int randomSector = UnityEngine.Random.Range(0,prizes.Count);
         Debug.Log("WIN: " + prizes[randomSector] + " | index = " + randomSector);
         maxAngle = 360f / prizes.Count * (randomSector + 1);
         minAngle = 360f / prizes.Count * randomSector ;
         return randomSector;
-        
     }
+
+    public int GetWinningSector()
+    {
+        return winSector;
+    }
+
+
 }
