@@ -1,65 +1,65 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using UnityEngine;
 
 public class BetManager : MonoBehaviour
 {
-    private int playerBalance = 1000; // Стартовый баланс игрока
-    private int betAmount = 100; // Сумма текущей ставки
-    private int winningMultiplier = 2; // Множитель выигрыша
+    [SerializeField] private int playerBalance = 1000; // Стартовый баланс игрока
+    [SerializeField] private int initialBetAmount = 100; // Начальная сумма ставки
+    [SerializeField] private int winningMultiplier = 2; // Множитель выигрыша
 
     [SerializeField] private MoneyUI moneyUI;
     [SerializeField] private FortuneWheel fortuneWheel;
 
+    private int actualWinningNumber;
+    private int betNumber = 5; // Ставка игрока
+
     private void Start()
     {
-       fortuneWheel.OnUpdateMoneyUI += BetManager_OnUpdateMoneyUI;
-       moneyUI.UpdateMoneyUI(playerBalance);
+        fortuneWheel.OnBetPlaced += BetManager_OnBetPlaced;
+        fortuneWheel.OnGameEnd += BetManager_OnGameEnd;
+        moneyUI.UpdateMoneyUI(playerBalance);
     }
 
-    private void BetManager_OnUpdateMoneyUI(object sender, System.EventArgs e)
+    private void BetManager_OnGameEnd(object sender, System.EventArgs e)
     {
-        int actualWinningNumber = fortuneWheel.GetWinningSector();
-        int betNumber = 5; // test
-
-        PlaceBet(betNumber, actualWinningNumber);
-    }
-
-    public void PlaceBet(int betNumber, int actualWinningNumber)
-    {
-        if (betAmount > 0 && betAmount <= playerBalance)
+        actualWinningNumber = fortuneWheel.GetWinningSector();
+        if (IsWinningBet())
         {
-            //Can play
-            if (betNumber == actualWinningNumber)
-            {
-                //Win
-                playerBalance += betAmount * winningMultiplier;
-                Debug.Log("Win");
-            }
-            else
-            {
-                //Lose
-                playerBalance -= betAmount;
-                Debug.Log("Lose");
-            }
-
-           
-            moneyUI.UpdateMoneyUI(playerBalance);
+            playerBalance += (initialBetAmount * winningMultiplier) + initialBetAmount;
+            Debug.Log("Win");
         }
-        else if (betAmount == 0)
+        UpdateMoneyUI();
+
+        // Проверка, может ли игрок продолжать играть
+        fortuneWheel.SetSomeMoney(CanPlaceBet());
+    }
+
+    private void BetManager_OnBetPlaced(object sender, System.EventArgs e)
+    {
+        if (CanPlaceBet())
         {
-            //Can not play
-            Debug.Log("You need to place a bet.");
+            playerBalance -= initialBetAmount;
+            UpdateMoneyUI();
         }
         else
         {
-            //Can not play
             Debug.Log("Not enough money to place the bet.");
         }
     }
 
+    private bool CanPlaceBet()
+    {
+        return initialBetAmount > 0 && initialBetAmount <= playerBalance;
+    }
 
+    private bool IsWinningBet()
+    {
+        return betNumber == actualWinningNumber;
+    }
 
-
+    private void UpdateMoneyUI()
+    {
+        moneyUI.UpdateMoneyUI(playerBalance);
+    }
 }
