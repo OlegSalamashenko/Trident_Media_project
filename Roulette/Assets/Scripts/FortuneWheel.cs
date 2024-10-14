@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class FortuneWheel : MonoBehaviour
 {
+    [SerializeField] private NumberUI numberUI;
     [SerializeField] private GameObject wheel;
     [SerializeField] private float rotationSpeed;
     [SerializeField] private float rotationTimeMaxSpeed;
@@ -36,6 +37,7 @@ public class FortuneWheel : MonoBehaviour
     {
         winSector = SetWin();
         isSpin = true;
+        numberUI.SetCanChange(false);
         OnBetPlaced?.Invoke(this, EventArgs.Empty);
 
         yield return StartCoroutine(SpinWithAcceleration());
@@ -45,6 +47,7 @@ public class FortuneWheel : MonoBehaviour
 
         OnGameEnd?.Invoke(this, EventArgs.Empty);
         isSpin = false;
+        numberUI.SetCanChange(true);
     }
 
     private IEnumerator SpinWithAcceleration()

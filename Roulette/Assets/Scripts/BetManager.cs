@@ -12,7 +12,7 @@ public class BetManager : MonoBehaviour
     [SerializeField] private FortuneWheel fortuneWheel;
 
     private int actualWinningNumber;
-    private int betNumber = 5; // Ставка игрока
+    private int betNumber;// Ставка игрока
 
     private void Start()
     {
@@ -48,6 +48,23 @@ public class BetManager : MonoBehaviour
         }
     }
 
+    public void SetBetNumber(int number)
+    {
+        this.betNumber = number;
+    }
+    public void IncreaseValue() {
+        initialBetAmount += 50;
+        initialBetAmount = Mathf.Clamp(initialBetAmount , 0, playerBalance);
+    }
+    public void DecreaseValue()
+    {
+        initialBetAmount -= 50;
+        initialBetAmount = Mathf.Clamp(initialBetAmount, 0, playerBalance);
+    }
+    public int GetInitialBetAmount()
+    {
+        return initialBetAmount;
+    }
     private bool CanPlaceBet()
     {
         return initialBetAmount > 0 && initialBetAmount <= playerBalance;
