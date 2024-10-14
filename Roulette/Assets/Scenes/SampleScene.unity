@@ -6750,6 +6750,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   numberUI: {fileID: 1863397017}
+  betUI: {fileID: 447214737}
   wheel: {fileID: 1073465989}
   rotationSpeed: 800
   rotationTimeMaxSpeed: 1.8

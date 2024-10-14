@@ -6,6 +6,7 @@ using UnityEngine;
 public class FortuneWheel : MonoBehaviour
 {
     [SerializeField] private NumberUI numberUI;
+    [SerializeField] private BetUI betUI; 
     [SerializeField] private GameObject wheel;
     [SerializeField] private float rotationSpeed;
     [SerializeField] private float rotationTimeMaxSpeed;
@@ -29,6 +30,8 @@ public class FortuneWheel : MonoBehaviour
     {
         if (!isSpin && someMoney)
         {
+            numberUI.LockNumbers(false);
+            betUI.LockBetButtons(false); 
             StartCoroutine(SpinWheel());
         }
     }
@@ -37,7 +40,6 @@ public class FortuneWheel : MonoBehaviour
     {
         winSector = SetWin();
         isSpin = true;
-        numberUI.SetCanChange(false);
         OnBetPlaced?.Invoke(this, EventArgs.Empty);
 
         yield return StartCoroutine(SpinWithAcceleration());
@@ -47,9 +49,10 @@ public class FortuneWheel : MonoBehaviour
 
         OnGameEnd?.Invoke(this, EventArgs.Empty);
         isSpin = false;
-        numberUI.SetCanChange(true);
-    }
 
+        numberUI.LockNumbers(true);
+        betUI.LockBetButtons(true); 
+    }
     private IEnumerator SpinWithAcceleration()
     {
         float elapsedTime = 0f;
@@ -104,7 +107,8 @@ public class FortuneWheel : MonoBehaviour
 
     private int SetWin()
     {
-        int randomSector = UnityEngine.Random.Range(0, prizes.Count);
+       // int randomSector = UnityEngine.Random.Range(0, prizes.Count);
+        int randomSector = UnityEngine.Random.Range(0, 1);
         Debug.Log("WIN: " + prizes[randomSector] + " | index = " + randomSector);
         maxAngle = 360f / prizes.Count * (randomSector + 1);
         minAngle = 360f / prizes.Count * randomSector;

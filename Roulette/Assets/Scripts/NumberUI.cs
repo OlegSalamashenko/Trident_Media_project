@@ -10,13 +10,9 @@
         [SerializeField] private BetManager betManager;
         [SerializeField] private RectTransform checkmark; // Ссылка на галочку
 
-        private bool canChange = true;
         private void Start()
         {
-            if (canChange)
-            {
-                SetupButtons();
-            }
+            SetupButtons();
         }
 
 
@@ -48,9 +44,15 @@
             buttonRect.sizeDelta.y / 2 - checkmark.rect.height / 2 + 10, 0);
         }
 
-        public void SetCanChange(bool canChange)
+    public void LockNumbers(bool canChange)
+    {
+        // Получаем все кнопки в панели и устанавливаем их состояние
+        Button[] buttons = panel.GetComponentsInChildren<Button>();
+        foreach (Button button in buttons)
         {
-            this.canChange = canChange;
+            button.interactable = canChange; // Блокируем или разблокируем кнопки
         }
-
     }
+
+
+}
