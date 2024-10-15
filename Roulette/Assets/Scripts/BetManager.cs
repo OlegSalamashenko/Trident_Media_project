@@ -74,6 +74,11 @@ public class BetManager : MonoBehaviour
                     bankBalance = 0;
                 }
             }
+            else
+            {
+                // Если бот не угадал, добавляем его ставку в банк
+                bankBalance += bot.BetAmount; // Ставка уходит в банк
+            }
 
             Debug.Log($"Бот поставил {bot.BetAmount} на число {bot.BetNumber}. Баланс: {bot.Balance}");
 
@@ -92,6 +97,7 @@ public class BetManager : MonoBehaviour
         UpdateMoneyUI();
         fortuneWheel.SetSomeMoney(CanPlaceBet());
     }
+
 
     private void BetManager_OnBetPlaced(object sender, System.EventArgs e)
     {
