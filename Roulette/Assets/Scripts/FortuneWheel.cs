@@ -107,8 +107,7 @@ public class FortuneWheel : MonoBehaviour
 
     private int SetWin()
     {
-        //int randomSector = UnityEngine.Random.Range(0, prizes.Count);
-        int randomSector = UnityEngine.Random.Range(0, 1);
+        int randomSector = UnityEngine.Random.Range(0, prizes.Count);
         Debug.Log("WIN: " + prizes[randomSector] + " | index = " + randomSector);
         maxAngle = 360f / prizes.Count * (randomSector + 1);
         minAngle = 360f / prizes.Count * randomSector;
