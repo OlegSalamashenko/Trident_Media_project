@@ -11,6 +11,7 @@ public class BetManager : MonoBehaviour
 
     [SerializeField] private MoneyUI moneyUI;
     [SerializeField] private FortuneWheel fortuneWheel;
+    [SerializeField] private WinnerUI winnerUI;
 
     [SerializeField] private int numberOfBots = 3; // Количество ботов
     private List<BotCheckmarkPair> botCheckmarkPairs = new List<BotCheckmarkPair>(); // Связь ботов с галочками
@@ -27,7 +28,8 @@ public class BetManager : MonoBehaviour
         // Инициализируем ботов и связываем их с галочками
         for (int i = 0; i < numberOfBots; i++)
         {
-            Bot newBot = new Bot(1000, 400); // Новый бот
+            string botName = "Bot " + (i + 1); // Имя бота
+            Bot newBot = new Bot(botName, 1000, 400); // Новый бот
             RectTransform checkmark = botCheckmarks[i]; // Галочка
             botCheckmarkPairs.Add(new BotCheckmarkPair(newBot, checkmark)); // Добавляем пару
         }
@@ -38,14 +40,17 @@ public class BetManager : MonoBehaviour
         moneyUI.UpdateBankAmount(bankBalance);
     }
 
+
     private void BetManager_OnGameEnd(object sender, System.EventArgs e)
     {
         actualWinningNumber = fortuneWheel.GetWinningSector();
+        List<string> winnerNames = new List<string>(); // Список для хранения имен победителей
 
         // Проверка выигрыша игрока
         if (IsWinningBet())
         {
             playerBalance += (initialBetAmount * winningMultiplier) + initialBetAmount;
+            winnerNames.Add("Player"); // Добавляем игрока в список победителей
 
             if (bankBalance >= initialBetAmount)
             {
@@ -64,6 +69,7 @@ public class BetManager : MonoBehaviour
             if (bot.BetNumber == actualWinningNumber)
             {
                 bot.AddWinnings((bot.BetAmount * winningMultiplier) + bot.BetAmount);
+                winnerNames.Add(bot.Name); // Добавляем имя бота в список победителей
 
                 if (bankBalance >= bot.BetAmount)
                 {
@@ -76,13 +82,17 @@ public class BetManager : MonoBehaviour
             }
             else
             {
-                // Если бот не угадал, добавляем его ставку в банк
                 bankBalance += bot.BetAmount; // Ставка уходит в банк
             }
 
-            Debug.Log($"Бот поставил {bot.BetAmount} на число {bot.BetNumber}. Баланс: {bot.Balance}");
-
+            Debug.Log($"Бот {bot.Name} поставил {bot.BetAmount} на число {bot.BetNumber}. Баланс: {bot.Balance}");
             bot.ChooseNewBet();
+        }
+
+        // Выводим всех победителей
+        if (winnerNames.Count > 0)
+        {
+            winnerUI.DisplayWinners(winnerNames); // Измените метод, чтобы принимать список имен
         }
 
         // Удаляем ботов с нулевым балансом и их галочки
@@ -101,6 +111,7 @@ public class BetManager : MonoBehaviour
 
     private void BetManager_OnBetPlaced(object sender, System.EventArgs e)
     {
+        winnerUI.ClearWinnerText(); // Очищаем текст победителей перед новой ставкой
         if (CanPlaceBet())
         {
             playerBalance -= initialBetAmount;

@@ -4,14 +4,16 @@ using UnityEngine;
 public class Bot
 {
     public int Balance { get; private set; }
-    public int BetAmount { get;set; }
+    public int BetAmount { get; set; }
     public int BetNumber { get; private set; }
+    public string Name { get; private set; } // Имя бота
 
     private int maxBetAmount; // Максимальная сумма ставки
     private List<int> possibleBets; // Список возможных ставок
 
-    public Bot(int initialBalance, int maxBet)
+    public Bot(string name, int initialBalance, int maxBet)
     {
+        Name = name; // Установка имени бота
         Balance = initialBalance;
         maxBetAmount = maxBet;
 
