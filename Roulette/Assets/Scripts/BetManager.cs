@@ -12,7 +12,7 @@ public class BetManager : MonoBehaviour
     [SerializeField] private MoneyUI moneyUI;
     [SerializeField] private FortuneWheel fortuneWheel;
 
-    [SerializeField] private int numberOfBots = 3; // Количество ботов
+    [SerializeField] private int numberOfBots = 4; // Количество ботов
     private List<Bot> bots = new List<Bot>();
 
     private int actualWinningNumber;
@@ -24,7 +24,7 @@ public class BetManager : MonoBehaviour
         // Инициализируем ботов
         for (int i = 0; i < numberOfBots; i++)
         {
-            bots.Add(new Bot(1000, 400)); // Каждый бот стартует с 1000 единицами и максимальной ставкой 200
+            bots.Add(new Bot(1000, 400)); // Каждый бот стартует с 1000 единицами и максимальной ставкой 400
         }
 
         fortuneWheel.OnBetPlaced += BetManager_OnBetPlaced;
@@ -88,7 +88,6 @@ public class BetManager : MonoBehaviour
         fortuneWheel.SetSomeMoney(CanPlaceBet());
     }
 
-
     private void BetManager_OnBetPlaced(object sender, System.EventArgs e)
     {
         // Игрок делает ставку
@@ -107,13 +106,8 @@ public class BetManager : MonoBehaviour
                 int betNumber = Random.Range(0, 10);
                 bot.PlaceBet(betNumber);
 
-                // Если сумма ставки превышает баланс, устанавливаем ставку в баланс бота
-                if (bot.BetAmount > bot.Balance)
-                {
-                    bot.BetAmount = bot.Balance;
-                }
-
-                bot.DeductBet(); // Уменьшаем баланс бота
+                // Уменьшаем баланс бота только если он может сделать ставку
+                bot.DeductBet();
             }
         }
 

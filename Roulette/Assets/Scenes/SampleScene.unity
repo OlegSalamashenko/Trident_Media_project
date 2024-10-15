@@ -782,7 +782,7 @@ MonoBehaviour:
   winningMultiplier: 2
   moneyUI: {fileID: 1598262702}
   fortuneWheel: {fileID: 1924060152}
-  numberOfBots: 3
+  numberOfBots: 4
 --- !u!1 &196537665
 GameObject:
   m_ObjectHideFlags: 0
