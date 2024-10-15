@@ -29,10 +29,10 @@ public class Bot
     public void ChooseNewBet()
     {
         // ¬ыбор случайного числа дл€ ставки
-        BetAmount = possibleBets[UnityEngine.Random.Range(0, possibleBets.Count)];
+        BetAmount = possibleBets[Random.Range(0, possibleBets.Count)];
 
         // ”станавливаем номер ставки (число от 0 до 9)
-        BetNumber = UnityEngine.Random.Range(0, 10);
+        BetNumber = Random.Range(0, 10);
 
         // ≈сли сумма ставки превышает баланс, устанавливаем ставку в баланс бота
         if (BetAmount > Balance)

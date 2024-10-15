@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
+using UnityEngine.UI;
 
 public class BetManager : MonoBehaviour
 {
@@ -12,8 +12,11 @@ public class BetManager : MonoBehaviour
     [SerializeField] private MoneyUI moneyUI;
     [SerializeField] private FortuneWheel fortuneWheel;
 
-    [SerializeField] private int numberOfBots = 4; // Количество ботов
-    private List<Bot> bots = new List<Bot>();
+    [SerializeField] private int numberOfBots = 3; // Количество ботов
+    private List<BotCheckmarkPair> botCheckmarkPairs = new List<BotCheckmarkPair>(); // Связь ботов с галочками
+
+    [SerializeField] private List<Button> numberButtons; // Список кнопок для каждого числа
+    [SerializeField] private List<RectTransform> botCheckmarks; // Список галочек для каждого бота
 
     private int actualWinningNumber;
     private int betNumber; // Ставка игрока
@@ -21,10 +24,12 @@ public class BetManager : MonoBehaviour
 
     private void Start()
     {
-        // Инициализируем ботов
+        // Инициализируем ботов и связываем их с галочками
         for (int i = 0; i < numberOfBots; i++)
         {
-            bots.Add(new Bot(1000, 400)); // Каждый бот стартует с 1000 единицами и максимальной ставкой 400
+            Bot newBot = new Bot(1000, 400); // Новый бот
+            RectTransform checkmark = botCheckmarks[i]; // Галочка
+            botCheckmarkPairs.Add(new BotCheckmarkPair(newBot, checkmark)); // Добавляем пару
         }
 
         fortuneWheel.OnBetPlaced += BetManager_OnBetPlaced;
@@ -42,7 +47,6 @@ public class BetManager : MonoBehaviour
         {
             playerBalance += (initialBetAmount * winningMultiplier) + initialBetAmount;
 
-            // Уменьшаем bankBalance, если это не приведет к отрицательному значению
             if (bankBalance >= initialBetAmount)
             {
                 bankBalance -= initialBetAmount;
@@ -54,13 +58,13 @@ public class BetManager : MonoBehaviour
         }
 
         // Проверка выигрыша каждого бота
-        foreach (Bot bot in bots)
+        foreach (var botPair in botCheckmarkPairs)
         {
+            Bot bot = botPair.Bot;
             if (bot.BetNumber == actualWinningNumber)
             {
                 bot.AddWinnings((bot.BetAmount * winningMultiplier) + bot.BetAmount);
 
-                // Уменьшаем bankBalance, если это не приведет к отрицательному значению
                 if (bankBalance >= bot.BetAmount)
                 {
                     bankBalance -= bot.BetAmount;
@@ -71,17 +75,18 @@ public class BetManager : MonoBehaviour
                 }
             }
 
-            // После окончания игры бот выбирает новую ставку
+            Debug.Log($"Бот поставил {bot.BetAmount} на число {bot.BetNumber}. Баланс: {bot.Balance}");
+
             bot.ChooseNewBet();
         }
 
-        // Удаляем ботов с нулевым балансом
-        bots.RemoveAll(bot => bot.Balance <= 0);
-
-        // Выводим информацию о ставках ботов
-        foreach (Bot bot in bots)
+        // Удаляем ботов с нулевым балансом и их галочки
+        for (int i = botCheckmarkPairs.Count - 1; i >= 0; i--)
         {
-            Debug.Log($"Бот поставил {bot.BetAmount} на число {bot.BetNumber}. Баланс: {bot.Balance}");
+            if (botCheckmarkPairs[i].Bot.Balance <= 0)
+            {
+                RemoveBot(i); // Удаляем бота и его галочку
+            }
         }
 
         UpdateMoneyUI();
@@ -90,28 +95,40 @@ public class BetManager : MonoBehaviour
 
     private void BetManager_OnBetPlaced(object sender, System.EventArgs e)
     {
-        // Игрок делает ставку
         if (CanPlaceBet())
         {
             playerBalance -= initialBetAmount;
             bankBalance += initialBetAmount;
         }
 
-        // Каждый бот делает ставку
-        foreach (Bot bot in bots)
+        foreach (var botPair in botCheckmarkPairs)
         {
+            Bot bot = botPair.Bot;
             if (bot.CanPlaceBet())
             {
-                // Бот выбирает случайное число для ставки
                 int betNumber = Random.Range(0, 10);
                 bot.PlaceBet(betNumber);
-
-                // Уменьшаем баланс бота только если он может сделать ставку
                 bot.DeductBet();
+                MoveBotCheckmarkToNumber(botPair.Checkmark, betNumber);
             }
         }
 
         UpdateMoneyUI();
+    }
+
+    private void MoveBotCheckmarkToNumber(RectTransform checkmark, int chosenNumber)
+    {
+        Button chosenButton = numberButtons[chosenNumber];
+        RectTransform buttonRect = chosenButton.GetComponent<RectTransform>();
+        checkmark.SetParent(buttonRect.GetChild(0), false);
+    }
+
+    private void RemoveBot(int index)
+    {
+        // Убираем галочку
+        botCheckmarkPairs[index].Checkmark.gameObject.SetActive(false);
+        // Удаляем бота и его галочку
+        botCheckmarkPairs.RemoveAt(index);
     }
 
     public void SetBetNumber(int number)
@@ -150,5 +167,17 @@ public class BetManager : MonoBehaviour
     {
         moneyUI.UpdateMoneyAmount(playerBalance);
         moneyUI.UpdateBankAmount(bankBalance);
+    }
+}
+
+public class BotCheckmarkPair
+{
+    public Bot Bot { get; private set; }
+    public RectTransform Checkmark { get; private set; }
+
+    public BotCheckmarkPair(Bot bot, RectTransform checkmark)
+    {
+        Bot = bot;
+        Checkmark = checkmark;
     }
 }

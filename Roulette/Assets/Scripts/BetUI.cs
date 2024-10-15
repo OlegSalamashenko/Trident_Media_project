@@ -41,7 +41,6 @@ public class BetUI : MonoBehaviour
         BetValueText.SetText(betManager.GetInitialBetAmount().ToString());
     }
 
-    // Метод для блокировки/разблокировки кнопок
     public void LockBetButtons(bool canChange)
     {
         betIncreaseBtn.interactable = canChange;
