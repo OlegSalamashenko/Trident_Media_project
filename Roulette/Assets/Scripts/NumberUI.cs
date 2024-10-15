@@ -33,11 +33,11 @@
             MoveCheckmarkToButton(button);
         }
 
-        private void MoveCheckmarkToButton(Button button)
+        public void MoveCheckmarkToButton(Button button)
         {
             RectTransform buttonRect = button.GetComponent<RectTransform>();
             checkmark.SetParent(buttonRect.GetChild(0), false);
-    }
+        }
 
     public void LockNumbers(bool canChange)
     {
