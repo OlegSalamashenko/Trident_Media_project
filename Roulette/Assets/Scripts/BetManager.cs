@@ -13,12 +13,14 @@ public class BetManager : MonoBehaviour
 
     private int actualWinningNumber;
     private int betNumber;// Ставка игрока
+    private int bankBalance = 0 ;
 
     private void Start()
     {
         fortuneWheel.OnBetPlaced += BetManager_OnBetPlaced;
         fortuneWheel.OnGameEnd += BetManager_OnGameEnd;
-        moneyUI.UpdateMoneyUI(playerBalance);
+        moneyUI.UpdateMoneyAmount(playerBalance);
+        moneyUI.UpdateBankAmount(bankBalance);
     }
 
     private void BetManager_OnGameEnd(object sender, System.EventArgs e)
@@ -27,6 +29,7 @@ public class BetManager : MonoBehaviour
         if (IsWinningBet())
         {
             playerBalance += (initialBetAmount * winningMultiplier) + initialBetAmount;
+            bankBalance -= initialBetAmount;
             Debug.Log("Win");
         }
         UpdateMoneyUI();
@@ -40,6 +43,7 @@ public class BetManager : MonoBehaviour
         if (CanPlaceBet())
         {
             playerBalance -= initialBetAmount;
+            bankBalance += initialBetAmount;
             UpdateMoneyUI();
         }
         else
@@ -77,6 +81,7 @@ public class BetManager : MonoBehaviour
 
     private void UpdateMoneyUI()
     {
-        moneyUI.UpdateMoneyUI(playerBalance);
+        moneyUI.UpdateMoneyAmount(playerBalance);
+        moneyUI.UpdateBankAmount(bankBalance);
     }
 }
