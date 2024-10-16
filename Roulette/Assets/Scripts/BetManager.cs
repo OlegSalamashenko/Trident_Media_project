@@ -1,10 +1,8 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
-using Random = UnityEngine.Random;
 
 public class BetManager : MonoBehaviour
 {
@@ -17,6 +15,7 @@ public class BetManager : MonoBehaviour
     [SerializeField] private WinnerUI winnerUI;
     [SerializeField] private MenuUI menuUI;
 
+    [SerializeField] private int numberOfBots = 3; // Количество ботов
     private List<BotCheckmarkPair> botCheckmarkPairs = new List<BotCheckmarkPair>(); // Связь ботов с галочками
 
     [SerializeField] private List<Button> numberButtons; // Список кнопок для каждого числа
@@ -28,38 +27,13 @@ public class BetManager : MonoBehaviour
 
     private void Start()
     {
-        // Подписываемся на события
-        menuUI.BotSliderValueChanged += OnBotSliderValueChanged;
+        InitializeBots(); // Инициализируем ботов
         fortuneWheel.OnBetPlaced += BetManager_OnBetPlaced;
         fortuneWheel.OnGameEnd += BetManager_OnGameEnd;
         moneyUI.UpdateMoneyAmount(playerBalance);
         moneyUI.UpdateBankAmount(bankBalance);
     }
 
-    // Обработка изменения количества ботов через слайдер
-    private void OnBotSliderValueChanged(object sender, EventArgs e)
-    {
-        int newBotCount = menuUI.GetBotSliderValue();
-
-        // Очищаем старых ботов
-        foreach (var botPair in botCheckmarkPairs)
-        {
-            botPair.Checkmark.gameObject.SetActive(false); // Отключаем галочки
-        }
-        botCheckmarkPairs.Clear(); // Очищаем список ботов
-
-        // Создаем новых ботов и их галочки
-        for (int i = 0; i < newBotCount; i++)
-        {
-            string botName = "Bot " + (i + 1);
-            Bot newBot = new Bot(botName, 1000, 400); // Новый бот
-            RectTransform checkmark = botCheckmarks[i]; // Галочка для бота
-            botCheckmarkPairs.Add(new BotCheckmarkPair(newBot, checkmark)); // Добавляем пару
-            checkmark.gameObject.SetActive(true); // Включаем галочку
-        }
-
-        UpdateMoneyUI(); // Обновляем UI
-    }
 
     private void BetManager_OnGameEnd(object sender, System.EventArgs e)
     {
@@ -219,6 +193,24 @@ public class BetManager : MonoBehaviour
 
         moneyUI.UpdateBankAmount(bankBalance);
     }
-}
 
+    private void InitializeBots()
+    {
+        botCheckmarkPairs.Clear(); // Очищаем предыдущие настройки
+
+        for (int i = 0; i < numberOfBots; i++)
+        {
+            string botName = "Bot " + (i + 1);
+            Bot newBot = new Bot(botName, 1000, 400);
+            RectTransform checkmark = botCheckmarks[i];
+            checkmark.gameObject.SetActive(true); // Активируем галочку для каждого бота
+            botCheckmarkPairs.Add(new BotCheckmarkPair(newBot, checkmark));
+        }
+
+        // Обновляем интерфейс сразу после инициализации ботов
+        UpdateMoneyUI();
+    }
+
+
+}
 
