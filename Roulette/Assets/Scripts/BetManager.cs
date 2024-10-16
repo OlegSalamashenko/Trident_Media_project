@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,6 +13,7 @@ public class BetManager : MonoBehaviour
     [SerializeField] private MoneyUI moneyUI;
     [SerializeField] private FortuneWheel fortuneWheel;
     [SerializeField] private WinnerUI winnerUI;
+    [SerializeField] private MenuUI menuUI;
 
     [SerializeField] private int numberOfBots = 3; // Количество ботов
     private List<BotCheckmarkPair> botCheckmarkPairs = new List<BotCheckmarkPair>(); // Связь ботов с галочками
@@ -183,6 +185,20 @@ public class BetManager : MonoBehaviour
     private void UpdateMoneyUI()
     {
         moneyUI.UpdateMoneyAmount(playerBalance);
+
+        // Обновляем баланс игрока в MenuUI
+        menuUI.UpdatePlayerBalance(playerBalance);
+
+        // Создаем список ботов для обновления их балансов
+        List<Bot> bots = new List<Bot>();
+        foreach (var botPair in botCheckmarkPairs)
+        {
+            bots.Add(botPair.Bot);
+        }
+
+        // Обновляем балансы ботов в MenuUI
+        menuUI.UpdateBotBalances(bots);
+
         moneyUI.UpdateBankAmount(bankBalance);
     }
 }
