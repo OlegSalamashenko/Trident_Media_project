@@ -1,6 +1,4 @@
-using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,7 +13,7 @@ public class BetManager : MonoBehaviour
     [SerializeField] private WinnerUI winnerUI;
     [SerializeField] private MenuUI menuUI;
 
-    [SerializeField] private int numberOfBots = 3; // Количество ботов
+    private int numberOfBots = 3; // Количество ботов, будет получаться с слайдера
     private List<BotCheckmarkPair> botCheckmarkPairs = new List<BotCheckmarkPair>(); // Связь ботов с галочками
 
     [SerializeField] private List<Button> numberButtons; // Список кнопок для каждого числа
@@ -25,8 +23,24 @@ public class BetManager : MonoBehaviour
     private int betNumber; // Ставка игрока
     private int bankBalance = 0;
 
+    public static BetManager Instance { get; private set; } // Singleton
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
     private void Start()
     {
+        numberOfBots = menuUI.GetBotCount(); // Получаем количество ботов с слайдера
+        Debug.Log("Количество ботов: " + numberOfBots);
         InitializeBots(); // Инициализируем ботов
         fortuneWheel.OnBetPlaced += BetManager_OnBetPlaced;
         fortuneWheel.OnGameEnd += BetManager_OnGameEnd;
@@ -38,13 +52,13 @@ public class BetManager : MonoBehaviour
     private void BetManager_OnGameEnd(object sender, System.EventArgs e)
     {
         actualWinningNumber = fortuneWheel.GetWinningSector();
-        List<string> winnerNames = new List<string>(); // Список для хранения имен победителей
+        List<string> winnerNames = new List<string>();
 
         // Проверка выигрыша игрока
         if (IsWinningBet())
         {
             playerBalance += (initialBetAmount * winningMultiplier) + initialBetAmount;
-            winnerNames.Add("Player"); // Добавляем игрока в список победителей
+            winnerNames.Add("Player");
 
             if (bankBalance >= initialBetAmount)
             {
@@ -63,7 +77,7 @@ public class BetManager : MonoBehaviour
             if (bot.BetNumber == actualWinningNumber)
             {
                 bot.AddWinnings((bot.BetAmount * winningMultiplier) + bot.BetAmount);
-                winnerNames.Add(bot.Name); // Добавляем имя бота в список победителей
+                winnerNames.Add(bot.Name);
 
                 if (bankBalance >= bot.BetAmount)
                 {
@@ -76,7 +90,7 @@ public class BetManager : MonoBehaviour
             }
             else
             {
-                bankBalance += bot.BetAmount; // Ставка уходит в банк
+                bankBalance += bot.BetAmount;
             }
 
             Debug.Log($"Бот {bot.Name} поставил {bot.BetAmount} на число {bot.BetNumber}. Баланс: {bot.Balance}");
@@ -86,7 +100,7 @@ public class BetManager : MonoBehaviour
         // Выводим всех победителей
         if (winnerNames.Count > 0)
         {
-            winnerUI.DisplayWinners(winnerNames); // Измените метод, чтобы принимать список имен
+            winnerUI.DisplayWinners(winnerNames);
         }
 
         // Удаляем ботов с нулевым балансом и их галочки
@@ -94,14 +108,13 @@ public class BetManager : MonoBehaviour
         {
             if (botCheckmarkPairs[i].Bot.Balance <= 0)
             {
-                RemoveBot(i); // Удаляем бота и его галочку
+                RemoveBot(i);
             }
         }
 
         UpdateMoneyUI();
         fortuneWheel.SetSomeMoney(CanPlaceBet());
     }
-
 
     private void BetManager_OnBetPlaced(object sender, System.EventArgs e)
     {
@@ -136,9 +149,7 @@ public class BetManager : MonoBehaviour
 
     private void RemoveBot(int index)
     {
-        // Убираем галочку
         botCheckmarkPairs[index].Checkmark.gameObject.SetActive(false);
-        // Удаляем бота и его галочку
         botCheckmarkPairs.RemoveAt(index);
     }
 
@@ -178,17 +189,14 @@ public class BetManager : MonoBehaviour
     {
         moneyUI.UpdateMoneyAmount(playerBalance);
 
-        // Обновляем баланс игрока в MenuUI
         menuUI.UpdatePlayerBalance(playerBalance);
 
-        // Создаем список ботов для обновления их балансов
         List<Bot> bots = new List<Bot>();
         foreach (var botPair in botCheckmarkPairs)
         {
             bots.Add(botPair.Bot);
         }
 
-        // Обновляем балансы ботов в MenuUI
         menuUI.UpdateBotBalances(bots);
 
         moneyUI.UpdateBankAmount(bankBalance);
@@ -196,21 +204,39 @@ public class BetManager : MonoBehaviour
 
     private void InitializeBots()
     {
-        botCheckmarkPairs.Clear(); // Очищаем предыдущие настройки
+        // Очищаем предыдущие данные о ботах и их галочках
+        foreach (var botPair in botCheckmarkPairs)
+        {
+            botPair.Checkmark.gameObject.SetActive(false); // Убираем галочки
+        }
+        botCheckmarkPairs.Clear(); // Очищаем список пар ботов
 
         for (int i = 0; i < numberOfBots; i++)
         {
             string botName = "Bot " + (i + 1);
             Bot newBot = new Bot(botName, 1000, 400);
             RectTransform checkmark = botCheckmarks[i];
-            checkmark.gameObject.SetActive(true); // Активируем галочку для каждого бота
-            botCheckmarkPairs.Add(new BotCheckmarkPair(newBot, checkmark));
+            checkmark.gameObject.SetActive(true); // Активируем галочку для нового бота
+            botCheckmarkPairs.Add(new BotCheckmarkPair(newBot, checkmark)); // Добавляем пару бот-галочка
+        }
+    }
+    private void UpdateBalances()
+    {
+        List<Bot> bots = new List<Bot>();
+        foreach (var botPair in botCheckmarkPairs)
+        {
+            bots.Add(botPair.Bot);
         }
 
-        // Обновляем интерфейс сразу после инициализации ботов
-        UpdateMoneyUI();
+        menuUI.UpdateBotBalances(bots); // Обновляем тексты балансов ботов в MenuUI
     }
 
 
-}
 
+    public void SetBotCount(int count)
+    {
+        numberOfBots = count;
+        InitializeBots(); // Обновляем ботов при изменении числа
+        UpdateBalances();  // Обновляем балансы в MenuUI
+    }
+}
